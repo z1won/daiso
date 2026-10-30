@@ -51,6 +51,7 @@ public/            ← GitHub Pages에 올라가는 폴더 (이것만으로 동�
   local.js         다이소 전용 / 편의점 전용 탭, 지역 선택
   favorites.js     즐겨찾기 탭 (관심 상품 재고 다시 조회)
   map.js           매장 지도 보기 (Leaflet + OpenStreetMap, 처음 열 때 불러옴)
+  vendor/leaflet/  지도 라이브러리 Leaflet 1.9.4 (BSD-2 라이선스, 원본 그대로)
   share.js         공유 링크 만들기 / 링크로 열면 같은 화면 복원
   palette.js       빠른 검색 창 (Ctrl+K, 초성 검색)
   lightbox.js      제품 사진 크게 보기

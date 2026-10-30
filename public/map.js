@@ -1,4 +1,6 @@
 // 매장 지도 보기 — 재고 조회 결과를 지도에 핀으로 표시 (Leaflet + OpenStreetMap, API 키 불필요)
+// Leaflet 1.9.4는 vendor/leaflet/ 에 함께 보관 (외부 CDN 불필요). 배경 지도(타일)는 OpenStreetMap에서 실시간으로 받습니다.
+// Leaflet을 바꿀 때는 vendor/leaflet/ 파일을 교체하고 아래 integrity 해시도 새 파일 기준으로 갱신하세요.
 // Leaflet은 처음 "지도"를 누를 때만 불러옵니다. local.js의 renderDaisoStock / renderCvsSummary 가 이 파일의 함수를 호출합니다.
 
 const VIEW_KEY = 'ps-storeview';
@@ -6,8 +8,8 @@ const storeView = Object.assign({ daiso: 'list', cvs: 'list' }, (() => { try { r
 
 /* ---------- Leaflet 지연 로드 ---------- */
 const LEAFLET = {
-  css: { href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', integrity: 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=' },
-  js: { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', integrity: 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=' },
+  css: { href: 'vendor/leaflet/leaflet.css', integrity: 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=' },
+  js: { src: 'vendor/leaflet/leaflet.js', integrity: 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=' },
 };
 let leafletPromise = null;
 function ensureLeaflet() {
