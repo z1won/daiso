@@ -87,6 +87,12 @@
         <h2>상품 목록 <span class="muted" id="resultMeta"></span></h2>
         <div class="tools">
           <input id="filter" class="filter" type="search" placeholder="결과 내 필터">
+          <select id="mSort" class="m-only sort-sel" aria-label="정렬">
+            <option value="price:1">가격 낮은순</option>
+            <option value="price:-1">가격 높은순</option>
+            <option value="name:1">이름순</option>
+            <option value="service:1">매장별</option>
+          </select>
           <label class="check"><input type="checkbox" id="pricedOnly"> 가격 있는 상품만</label>
           <div class="seg" role="tablist">
             <button data-view="table" class="on">표</button>

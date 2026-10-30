@@ -472,6 +472,7 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
 .tab[data-tab="fav"] .tab-ico { display: block; width: 13px; height: 13px; stroke-width: 2; }
 .split > * { min-width: 0; } /* 긴 상품명이 화면 폭을 넘기지 않도록 */
 .app { -webkit-tap-highlight-color: transparent; }
+.m-only { display: none; }
 
 /* 태블릿·휴대폰 (터치): 상단 바는 간결하게, 탭은 화면 아래에 고정 */
 @media (max-width: 960px) {
@@ -549,6 +550,8 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
   .m-list .results tbody tr td { background: none; }
   .results-panel .tools { width: 100%; }
   .results-panel .filter { flex: 1 1 140px; height: 38px; }
+  .m-only { display: block; }
+  .sort-sel { height: 38px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-1); color: var(--text-primary); font-size: 16px; }
 
   /* 가격 비교: [사진] 상품명 / 매장 · 가격 */
   #tableWrap tr { grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-areas: "img name name" "img svc price"; }
@@ -591,6 +594,7 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
   /* --- 편의점: 브랜드 카드를 옆으로 넘겨 보기 --- */
   .brand-grid { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -12px; padding: 0 12px 4px; scroll-padding: 0 12px; scrollbar-width: none; overscroll-behavior-x: contain; }
   .brand-grid::-webkit-scrollbar { display: none; }
+  .brand-grid { align-items: flex-start; } /* 내용이 짧은 카드(일치 상품 없음 등)가 빈 공간으로 늘어나지 않게 */
   .brand-grid > * { flex: 0 0 86%; scroll-snap-align: start; }
   .brand-grid > :only-child { flex-basis: 100%; }
   .bstores { height: auto; max-height: 360px; }

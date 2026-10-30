@@ -33,6 +33,8 @@ npm run static   # 정적 모드 확인 (public/ 만 서빙, http://localhost:40
 
 `/api/cvs/stock?brand=...` 는 브랜드별 어댑터로 분기하며, 각 MCP 도구의 서로 다른 응답 형태를 공통 형태(`{ brand, product, candidates, codeSelectable, totals, stores[], calls[], note?, error? }`)로 정규화한다. 브랜드별로 MCP 도구가 받는 인자가 다르다 (예: 세븐일레븐은 좌표 대신 지역명 `storeKeyword`, 이마트24는 `area1`/`area2`, GS25는 상품 후보를 먼저 검색 후 `pickBest` 로 선택). 새 브랜드나 필드를 추가할 때는 이 공통 형태를 유지해야 `local.js` 렌더링이 그대로 동작한다.
 
+상품 자동 선택은 `matchScore(상품명, 검색어)` 점수(브랜드 접두 "브랜드)" 제거 후 비교, 맛·향 표기와 묶음 상품 감점)로 `pickBest` 가 고른다. 점수 0이면 엉뚱한 상품의 재고를 조회하지 않고 `noMatch` 결과(후보만 반환)를, `GOOD_MATCH`(40) 미만이면 `lowMatch` 경고를 붙인다. MCP 도구에 상품 코드 인자가 있는 GS25(`itemCode`)·이마트24(`pluCd`)만 후보를 직접 고를 수 있고, CU·세븐일레븐은 서버가 고른 상품을 화면에서 `PriceCore.matchScore` 로 검사해 경고만 띄운다.
+
 ### 프론트엔드
 
 - 전역 스크립트를 `index.html` 에서 순서대로 로드한다: `config.js` → `core.js` → `api-shim.js` → `lightbox.js` → `regions.js` → `app.js` → `local.js` → `favorites.js` → `map.js` → `share.js` → `palette.js`. 모듈 시스템이 없으므로 로드 순서와 전역 이름 충돌에 주의 (`$`, `esc` 등은 `app.js` 에, `api`·`region`·`resolveLocation` 등은 `local.js` 에 정의되어 뒤 파일들이 공유).

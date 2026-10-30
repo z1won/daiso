@@ -303,11 +303,6 @@ async function loadBrand(id) {
   renderBrand(id); renderCvsSummary();
 }
 
-// "브랜드)상품명"에서 상품명 부분이 검색어로 시작하는지
-function nameMatches(name, kw) {
-  const body = name.replace(/^[^)]*\)/, '').replace(/\s/g, '');
-  return body.startsWith(kw.replace(/\s/g, '').slice(0, 2));
-}
 function brandHead(id, badge, star = '') {
   return `<div class="bhead"><div class="svc-name" style="--c:var(--s-${id})"><i class="sw"></i>${BRAND[id].name}</div><span class="bhead-r">${badge}${star}</span></div>`;
 }
@@ -316,27 +311,33 @@ function renderBrand(id) {
   const r = cvs.results[id], card = $('#bc-' + id); if (!card) return;
   const inStock = r.stores.filter(s => s.qty > 0);
   const badge = r.error ? '<span class="badge err">● 조회 실패</span>'
+    : r.noMatch ? '<span class="badge warn">일치 상품 없음</span>'
     : !r.product ? '<span class="badge off">상품 없음</span>'
     : inStock.length ? `<span class="badge ok">재고 매장 ${inStock.length}</span>` : '<span class="badge warn">주변 재고 없음</span>';
   const p = r.product || {};
-  const candSelect = r.codeSelectable && r.candidates.length > 1
-    ? `<select class="cand" data-brand="${id}" aria-label="${BRAND[id].name} 상품 선택">${r.candidates.map(c => `<option value="${esc(c.code)}" ${c.code === p.code ? 'selected' : ''}>${esc(c.name)}${c.price ? ` · ${won(c.price)}원` : ''}</option>`).join('')}</select>`
+  // 검색어와 맞지 않을 수 있는 상품: GS25·이마트24는 서버 판단(lowMatch), CU·세븐일레븐은 상품명 점수로 확인
+  const doubtful = !r.noMatch && p.name && !cvs.codes[id]
+    && (r.codeSelectable ? r.lowMatch : PriceCore.matchScore(p.name, cvs.keyword) < PriceCore.GOOD_MATCH);
+  const candSelect = r.codeSelectable && (r.candidates.length > 1 || (r.noMatch && r.candidates.length))
+    ? `<select class="cand" data-brand="${id}" aria-label="${BRAND[id].name} 상품 선택">${p.code ? '' : '<option value="" selected disabled>검색된 후보에서 상품 선택…</option>'}${r.candidates.map(c => `<option value="${esc(c.code)}" ${c.code === p.code ? 'selected' : ''}>${esc(c.name)}${c.price ? ` · ${won(c.price)}원` : ''}</option>`).join('')}</select>`
     : r.candidates.length > 1 ? `<details class="cands"><summary>검색된 후보 ${r.candidates.length}개 <span class="muted">(정확한 상품명으로 다시 검색하면 바뀝니다)</span></summary><ul>${r.candidates.map(c => `<li><span>${esc(c.name)}</span><span class="tnum">${c.price ? won(c.price) + '원' : ''}</span></li>`).join('')}</ul></details>` : '';
   card.innerHTML = brandHead(id, badge, r.error || !r.product?.name ? '' : favStar(favFromCvs(id, r))) + (r.error ? `
       <div class="empty">${esc(r.error)}<br><button class="ghost retry" data-brand="${id}" style="margin-top:6px">다시 시도</button></div>`
-    : `<div class="bprod">
+    : `${r.product ? `<div class="bprod">
         ${p.imageUrl ? `<span class="thumb zoomable" style="background-image:url('${esc(p.imageUrl)}')"${zoomAttr(p.imageUrl, p.name, `${p.price != null ? won(p.price) + '원' : '가격 미제공'} · ${BRAND[id].name}`, 'cvs')}></span>` : '<span class="thumb ph">—</span>'}
         <div class="pmain"><div class="pname" title="${esc(p.name)}">${esc(p.name || '—')}</div>
           <div class="muted small">${p.price != null ? `<b class="price">${won(p.price)}</b>원` : '가격 미제공'} · <span class="code">${esc(p.code || '')}</span></div></div>
-      </div>
+      </div>` : ''}
       ${candSelect}
-      <div class="bstats"><span>조회 매장 <b>${r.stores.length}</b>${r.totals.stores ? `<span class="muted">/${r.totals.stores}</span>` : ''}</span><span>재고 보유 <b>${inStock.length}</b></span><span>수량 합계 <b>${r.totals.qty ?? '—'}</b></span></div>
-      ${r.note ? `<div class="svc-msg">ⓘ ${esc(r.note)}</div>` : ''}
-      ${!r.codeSelectable && p.name && !nameMatches(p.name, cvs.keyword) ? `<div class="svc-msg warn-msg">⚠ 검색어와 다른 상품이 선택됐을 수 있습니다. 더 구체적인 이름으로 검색해 보세요 (예: "${esc(cvs.keyword)} 캔", "${esc(cvs.keyword)}500ml").</div>` : ''}
-      <div class="bstores">${r.stores.length ? `<table class="results compact fixed"><colgroup><col><col style="width:64px"><col style="width:84px"></colgroup><tbody>${r.stores.map(s => `
+      ${r.product ? `<div class="bstats"><span>조회 매장 <b>${r.stores.length}</b>${r.totals.stores ? `<span class="muted">/${r.totals.stores}</span>` : ''}</span><span>재고 보유 <b>${inStock.length}</b></span><span>수량 합계 <b>${r.totals.qty ?? '—'}</b></span></div>` : ''}
+      ${r.note ? `<div class="svc-msg ${r.noMatch ? 'warn-msg' : ''}">${r.noMatch ? '⚠' : 'ⓘ'} ${esc(r.note)}</div>` : ''}
+      ${doubtful ? `<div class="svc-msg warn-msg">⚠ ${r.codeSelectable
+        ? '검색어와 정확히 맞는 상품이 없어 가장 비슷한 상품을 골랐습니다. 위 목록에서 다른 상품을 고를 수 있습니다.'
+        : `검색어와 다른 상품이 선택됐을 수 있습니다. 더 구체적인 이름으로 검색해 보세요 (예: "${esc(cvs.keyword)} 캔", "${esc(cvs.keyword)}500ml").`}</div>` : ''}
+      ${r.noMatch ? '' : `<div class="bstores">${r.stores.length ? `<table class="results compact fixed"><colgroup><col><col style="width:64px"><col style="width:84px"></colgroup><tbody>${r.stores.map(s => `
         <tr><td><div class="pname" title="${esc(s.address || '')}">${esc(s.name)}</div>${s.tags?.length ? `<div class="tags">${s.tags.slice(0, 2).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}</td>
           <td class="num tnum muted">${fmtDist(s.km)}</td><td class="num">${qtyBadge(s.qty)}</td></tr>`).join('')}</tbody></table>`
-        : '<div class="empty">주변 매장 정보가 없습니다.</div>'}</div>`);
+        : '<div class="empty">주변 매장 정보가 없습니다.</div>'}</div>`}`);
 }
 
 document.addEventListener('change', e => {

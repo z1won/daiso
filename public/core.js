@@ -184,14 +184,19 @@ const CVS = {
     calls.push(s.call);
     const cands = (s.data?.products || []).map(p => ({ code: p.itemCode, name: p.itemName, price: null, imageUrl: p.imageUrl }));
     if (!cands.length) return emptyBrand('gs25', calls, '검색된 상품이 없습니다');
-    if (!code) code = pickBest(cands, keyword).code;
+    let lowMatch = false;
+    if (!code) {
+      const best = pickBest(cands, keyword);
+      if (!best.score) return noMatchBrand('gs25', calls, cands, keyword); // 예: "하이볼" → 얼음·아이스컵만 검색됨
+      code = best.cand.code; lowMatch = best.score < GOOD_MATCH;
+    }
     const r = await timed('check_inventory', { service: 'gs25', itemCode: code, keyword, storeLimit: STORE_LIMIT, ...coords(q), ...(q.get('lat') ? {} : { storeKeyword: q.get('region') || undefined }) });
     calls.push(r.call);
     if (r.isError || r.data?.error) return errBrand('gs25', calls, errMsg(r), cands, code);
     const d = r.data, inv = d.inventory || {};
     const chosen = cands.find(c => c.code === code) || {};
     return {
-      brand: 'gs25', codeSelectable: true, candidates: cands,
+      brand: 'gs25', codeSelectable: true, candidates: cands, lowMatch,
       product: { code, name: d.product?.name || chosen.name, price: d.product?.sellPrice ?? null, imageUrl: d.product?.imageUrl || chosen.imageUrl },
       totals: { stores: inv.matchedStoreCount ?? inv.totalStoreCount, inStock: inv.inStockStoreCount, qty: inv.totalStockQuantity },
       stores: (inv.stores || []).map(s => ({ name: s.storeName, address: s.address, phone: s.phone, lat: s.latitude, lng: s.longitude, distanceM: s.distanceM, qty: s.realStockQuantity, soldOut: s.isSoldOut, tags: (s.propertyNames || []).slice(0, 4) })),
@@ -237,12 +242,17 @@ const CVS = {
     let code = q.get('code');
     let r = await timed('check_inventory', code ? { ...base, pluCd: code } : base);
     calls.push(r.call);
+    // 검색어로 상품을 하나도 못 찾으면 서버가 오류로 답함 → "일치 상품 없음"으로 안내
+    if (!code && (r.isError || r.data?.error) && /찾을 수 없/.test(errMsg(r))) return noMatchBrand('emart24', calls, [], keyword);
     if (r.isError || r.data?.error) return errBrand('emart24', calls, errMsg(r));
     const cands = (r.data.productCandidates || []).map(p => ({ code: p.pluCd, name: p.goodsName, price: p.viewPrice }));
     // 자동 선택된 상품이 검색어와 맞지 않으면 더 알맞은 후보로 다시 조회
+    let lowMatch = false;
     if (!code && cands.length) {
       const best = pickBest(cands, keyword);
-      if (best.code !== r.data.pluCd) { r = await timed('check_inventory', { ...base, pluCd: best.code }); calls.push(r.call); }
+      if (!best.score) return noMatchBrand('emart24', calls, cands, keyword);
+      lowMatch = best.score < GOOD_MATCH;
+      if (best.cand.code !== r.data.pluCd) { r = await timed('check_inventory', { ...base, pluCd: best.cand.code }); calls.push(r.call); }
     }
     const d = r.data || {}, gi = d.inventory?.goodsInfo || {};
     const qtyBy = new Map((d.inventory?.stores || []).map(s => [s.bizNo, s.bizQty]));
@@ -251,7 +261,7 @@ const CVS = {
       return { name: s.storeName, address: s.address, phone: s.phone, lat: s.latitude, lng: s.longitude, distanceM: s.distanceM, qty, soldOut: qty === 0, tags: [(s.service24h || s.openTime === s.closeTime) ? '24시간' : s.openTime && `${fmtHm(s.openTime)}~${fmtHm(s.closeTime)}`].filter(Boolean) };
     });
     return {
-      brand: 'emart24', codeSelectable: true, candidates: cands,
+      brand: 'emart24', codeSelectable: true, candidates: cands, lowMatch,
       product: { code: d.pluCd, name: gi.goodsNm || cands.find(c => c.code === d.pluCd)?.name, price: gi.salePrice ?? gi.viewPrice ?? null, imageUrl: null },
       totals: { stores: d.nearbyStores?.totalCount, inStock: stores.filter(s => s.qty > 0).length, qty: sum(stores.map(s => s.qty)) },
       stores, calls,
@@ -267,14 +277,46 @@ function coords(q) { const lat = Number(q.get('lat')), lng = Number(q.get('lng')
 function errMsg(r) { return r.data?.error?.message || r.data?.diagnostics?.hint || r.text?.slice(0, 200) || 'MCP 오류'; }
 function sum(a) { const n = a.filter(x => typeof x === 'number'); return n.length ? n.reduce((s, x) => s + x, 0) : null; }
 function fmtHm(s) { return s && s.length === 4 ? `${s.slice(0, 2)}:${s.slice(2)}` : s; }
-// "브랜드)상품명" 형태에서 상품명 부분에 검색어가 들어간 후보를 우선 선택
+/* ---------- 상품명 ↔ 검색어 일치 점수 ----------
+   편의점 상품명은 "브랜드)상품명용량" 형태라서 브랜드 부분을 떼고 비교합니다.
+   100 상품명이 검색어로 시작   예) 참이슬 → 하이트진로)참이슬후레쉬PET640M
+    70 상품명에 검색어 포함     예) 하이볼 → 칵테일)사와사와레몬하이볼350ml
+    60 띄어 쓴 단어가 모두 포함 예) "카스 캔" → 오비)카스제로캔500ML
+    25 브랜드에만 포함          예) 참이슬 → 참이슬)석쇠직화양념삼겹살 (안주)
+    20 글자 순서만 일치         예) 카스캔 → 오비)카스올제로캔350ML
+     0 관련 없음               예) 하이볼 → 정화)아이스빅볼웨이브160G
+   "콤부차하이볼향"처럼 검색어 뒤에 맛·향이 붙으면 감점, 묶음 상품은 낱개보다 약간 감점 */
+const GOOD_MATCH = 40;
+const squash = s => String(s || '').toLowerCase().replace(/\s/g, '');
+function matchScore(name, kw) {
+  const k = squash(kw); if (!k) return 0;
+  const full = squash(name);
+  const body = squash(String(name || '').replace(/^\s*\[[^\]]*\]/, '').replace(/^[^)]*\)/, ''));
+  const words = String(kw).trim().toLowerCase().split(/\s+/).filter(Boolean);
+  let s;
+  if (body.startsWith(k)) s = 100;
+  else if (body.includes(k)) s = 70;
+  else if (words.length > 1 && words.every(w => body.includes(w))) s = 60;
+  else if (full.includes(k)) s = 25;
+  else if (isSubsequence(k, body)) s = 20;
+  else return 0;
+  const at = body.indexOf(k);
+  if (at >= 0 && /^(향|맛|풍|스타일)/.test(body.slice(at + k.length))) s -= 35;
+  if (/^\[번들\]|\*\d+|\d+입/.test(full)) s -= 8;
+  return Math.max(s, 1);
+}
+function isSubsequence(k, text) { let i = 0; for (const ch of text) if (ch === k[i]) i++; return i === k.length; }
+// 점수가 가장 높은 후보 (같으면 서버가 준 순서 = 검색 관련도 순)
 function pickBest(cands, kw) {
-  const k = kw.replace(/\s/g, '');
-  const body = n => (n || '').replace(/^[^)]*\)/, '').replace(/\s/g, '');
-  return cands.find(c => body(c.name).startsWith(k)) || cands.find(c => body(c.name).includes(k))
-    || cands.find(c => (c.name || '').includes(k)) || cands[0];
+  let best = { cand: cands[0], score: 0 };
+  for (const c of cands) { const sc = matchScore(c.name, kw); if (sc > best.score) best = { cand: c, score: sc }; }
+  return best;
 }
 function emptyBrand(brand, calls, msg) { return { brand, product: null, candidates: [], stores: [], totals: {}, note: msg, calls }; }
+function noMatchBrand(brand, calls, candidates, kw) {
+  return { brand, product: null, candidates, codeSelectable: true, noMatch: true, stores: [], totals: {}, calls,
+    note: `"${kw}" 검색 결과에 맞는 상품이 없습니다. ${candidates.length ? '위 후보에서 직접 고르거나 ' : ''}다른 이름으로 검색해 보세요 (예: 띄어쓰기, 브랜드명만).` };
+}
 function errBrand(brand, calls, msg, candidates = [], code) { return { brand, error: msg, product: code ? { code } : null, candidates, codeSelectable: !!candidates.length, stores: [], totals: {}, calls }; }
 
 /* 경로와 쿼리를 받아 결과 객체를 돌려줌 (실패 시 status·call이 붙은 Error를 던짐) */
@@ -284,5 +326,5 @@ async function handle(pathname, params) {
   return handler(params instanceof URLSearchParams ? params : new URLSearchParams(params || ''));
 }
 
-return { handle, routes, callTool, listTools, MCP_URL };
+return { handle, routes, callTool, listTools, matchScore, GOOD_MATCH, MCP_URL };
 });

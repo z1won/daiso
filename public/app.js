@@ -249,6 +249,8 @@ function renderResults() {
   const list = visibleItems();
   const d = state.data;
   $('#resultMeta').textContent = d ? `${list.length} / ${d.items.length}` : '';
+  const sortOpt = `${state.sort.key}:${state.sort.dir}`; // 모바일 정렬 선택과 표 머리글 정렬을 같은 상태로
+  if ([...$('#mSort').options].some(o => o.value === sortOpt)) $('#mSort').value = sortOpt;
   document.querySelectorAll('th[data-sort]').forEach(th => {
     th.classList.toggle('sorted', th.dataset.sort === state.sort.key);
     th.classList.toggle('desc', th.dataset.sort === state.sort.key && state.sort.dir < 0);
@@ -282,6 +284,8 @@ document.querySelectorAll('th[data-sort]').forEach(th => th.onclick = () => {
   renderResults();
 });
 $('#filter').oninput = e => { state.filter = e.target.value; renderResults(); };
+// 모바일: 표 머리글이 숨겨지므로 정렬을 선택 상자로
+$('#mSort').onchange = e => { const [key, dir] = e.target.value.split(':'); state.sort = { key, dir: Number(dir) }; renderResults(); };
 $('#pricedOnly').onchange = e => { state.pricedOnly = e.target.checked; renderResults(); };
 document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
   state.view = b.dataset.view;
