@@ -35,8 +35,9 @@ npm run static   # 정적 모드 확인 (public/ 만 서빙, http://localhost:40
 
 ### 프론트엔드
 
-- 전역 스크립트를 `index.html` 에서 순서대로 로드한다: `config.js` → `core.js` → `api-shim.js` → `lightbox.js` → `regions.js` → `app.js` → `local.js`. 모듈 시스템이 없으므로 로드 순서와 전역 이름 충돌에 주의 (`$`, `esc` 등은 `app.js` 에 정의되어 `local.js` 가 공유).
+- 전역 스크립트를 `index.html` 에서 순서대로 로드한다: `config.js` → `core.js` → `api-shim.js` → `lightbox.js` → `regions.js` → `app.js` → `local.js` → `favorites.js`. 모듈 시스템이 없으므로 로드 순서와 전역 이름 충돌에 주의 (`$`, `esc` 등은 `app.js` 에, `api`·`region`·`resolveLocation` 등은 `local.js` 에 정의되어 뒤 파일들이 공유).
 - `app.js` = 가격 비교 탭 (`/api/compare`, `/api/popwords`, `/api/health`), `local.js` = 다이소 전용·편의점 전용 탭과 지역 선택 (`/api/geocode` 는 GS25 `find_stores` 를 지오코딩 용도로 활용).
+- `favorites.js` = 즐겨찾기 탭. ★ 버튼으로 상품과 **저장 당시 지역**을 `ps-favorites` 에 보관하고, 탭을 열 때 기존 `/api/daiso/stock`·`/api/cvs/stock` 을 다시 호출한다 (메모리 결과 2분 재사용, 동시 3개). 지역 함수(`regionText`, `resolveLocation` 등)는 이 때문에 지역 객체를 인자로 받는다.
 - HTML은 템플릿 문자열로 생성하므로 외부 데이터는 반드시 `esc()` 로 이스케이프한다.
 - 설정·최근 검색어는 `localStorage` (`ps-` 접두사 키)에 저장.
 

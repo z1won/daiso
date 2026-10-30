@@ -29,6 +29,7 @@ function showTab(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === id));
   document.querySelectorAll('.view').forEach(v => { v.hidden = v.id !== 'view-' + id; });
   localStorage.setItem(TAB_KEY, id);
+  document.dispatchEvent(new CustomEvent('tabshown', { detail: id }));
 }
 document.querySelector('.tabs').onclick = e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); };
 
@@ -50,10 +51,11 @@ const region = Object.assign({ sido: '서울', gugun: '강남구', dong: '', gps
 const sidoOf = short => REGIONS.find(r => r.short === short) || REGIONS[0];
 const geoCacheC = new Map();
 
-function regionText() { return [region.sido, region.gugun, region.dong].filter(Boolean).join(' '); }
-function regionLabel() { return region.gps ? '현재 위치' : regionText(); }
+// 아래 지역 함수들은 즐겨찾기에 저장된 지역(rg)으로도 호출됩니다
+function regionText(rg = region) { return [rg.sido, rg.gugun, rg.dong].filter(Boolean).join(' '); }
+function regionLabel(rg = region) { return rg.gps ? '현재 위치' : regionText(rg); }
 // 세븐일레븐·GS25 키워드용 (시/도 약칭 없이도 잘 인식됨)
-function regionKeyword() { return [region.gugun === '세종시' ? '세종' : region.gugun, region.dong].filter(Boolean).join(' '); }
+function regionKeyword(rg = region) { return [rg.gugun === '세종시' ? '세종' : rg.gugun, rg.dong].filter(Boolean).join(' '); }
 
 function renderRegions() {
   document.querySelectorAll('[data-region]').forEach(el => {
@@ -92,9 +94,9 @@ document.addEventListener('click', e => {
 function alertInline(msg) { $('#cK4s').textContent = msg; $('#dRegionLabel').textContent = '· ' + msg; }
 
 // 지역 → 좌표 (서버가 MCP의 GS25 매장 검색 지오코딩을 사용)
-async function resolveLocation() {
-  if (region.gps) return { ...region.gps, label: '현재 위치' };
-  const q = regionText();
+async function resolveLocation(rg = region) {
+  if (rg.gps) return { ...rg.gps, label: '현재 위치' };
+  const q = regionText(rg);
   if (geoCacheC.has(q)) return geoCacheC.get(q);
   const r = await api('/api/geocode', { q });
   if (r.call) log(r.call, `<div class="c">${esc(q)} → ${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}</div>`);
@@ -191,6 +193,7 @@ function daisoHeader(p, stats = '') {
     ${p.imageUrl ? `<span class="thumb lg zoomable" style="background-image:url('${esc(p.imageUrl)}')"${zoomAttr(p.imageUrl, p.name, `${won(p.price)}원 · 다이소 · 상품번호 ${p.id}`)}></span>` : ''}
     <div class="pmain"><div class="dname">${esc(p.name)}</div>
       <div class="muted small">${won(p.price)}원 · 상품번호 ${esc(p.id)}</div></div>
+    ${favStar(favFromDaiso(p))}
   </div>${stats}`;
 }
 
@@ -294,8 +297,8 @@ function nameMatches(name, kw) {
   const body = name.replace(/^[^)]*\)/, '').replace(/\s/g, '');
   return body.startsWith(kw.replace(/\s/g, '').slice(0, 2));
 }
-function brandHead(id, badge) {
-  return `<div class="bhead"><div class="svc-name" style="--c:var(--s-${id})"><i class="sw"></i>${BRAND[id].name}</div>${badge}</div>`;
+function brandHead(id, badge, star = '') {
+  return `<div class="bhead"><div class="svc-name" style="--c:var(--s-${id})"><i class="sw"></i>${BRAND[id].name}</div><span class="bhead-r">${badge}${star}</span></div>`;
 }
 
 function renderBrand(id) {
@@ -308,7 +311,7 @@ function renderBrand(id) {
   const candSelect = r.codeSelectable && r.candidates.length > 1
     ? `<select class="cand" data-brand="${id}" aria-label="${BRAND[id].name} 상품 선택">${r.candidates.map(c => `<option value="${esc(c.code)}" ${c.code === p.code ? 'selected' : ''}>${esc(c.name)}${c.price ? ` · ${won(c.price)}원` : ''}</option>`).join('')}</select>`
     : r.candidates.length > 1 ? `<details class="cands"><summary>검색된 후보 ${r.candidates.length}개 <span class="muted">(정확한 상품명으로 다시 검색하면 바뀝니다)</span></summary><ul>${r.candidates.map(c => `<li><span>${esc(c.name)}</span><span class="tnum">${c.price ? won(c.price) + '원' : ''}</span></li>`).join('')}</ul></details>` : '';
-  card.innerHTML = brandHead(id, badge) + (r.error ? `
+  card.innerHTML = brandHead(id, badge, r.error || !r.product?.name ? '' : favStar(favFromCvs(id, r))) + (r.error ? `
       <div class="empty">${esc(r.error)}<br><button class="ghost retry" data-brand="${id}" style="margin-top:6px">다시 시도</button></div>`
     : `<div class="bprod">
         ${p.imageUrl ? `<span class="thumb zoomable" style="background-image:url('${esc(p.imageUrl)}')"${zoomAttr(p.imageUrl, p.name, `${p.price != null ? won(p.price) + '원' : '가격 미제공'} · ${BRAND[id].name}`, 'cvs')}></span>` : '<span class="thumb ph">—</span>'}

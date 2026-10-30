@@ -20,6 +20,7 @@
       <button class="tab on" data-tab="compare" role="tab">가격 비교</button>
       <button class="tab" data-tab="daiso" role="tab"><i class="sw" style="--c:var(--s-daiso)"></i>다이소 전용</button>
       <button class="tab" data-tab="cvs" role="tab"><i class="sw" style="--c:var(--s-gs25)"></i>편의점 전용<span class="tab-sub">주류·간편식</span></button>
+      <button class="tab" data-tab="fav" role="tab">★ 즐겨찾기<span class="tab-count" id="favCount" hidden></span></button>
     </nav>
     <div class="top-right">
       <span id="mcpStatus" class="status-pill" title="MCP 연결 상태"><i class="sdot"></i><span>MCP 연결 확인 중…</span></span>
@@ -196,6 +197,17 @@
     </section>
   </div>
 
+  <!-- ===================== 즐겨찾기 ===================== -->
+  <div class="view" id="view-fav" hidden>
+    <section class="panel" style="margin-top:12px">
+      <div class="panel-head">
+        <h2>관심 상품 재고 <span class="muted" id="favMeta"></span></h2>
+        <button class="ghost small" id="favRefresh">모두 새로고침</button>
+      </div>
+      <div id="favList"></div>
+    </section>
+  </div>
+
   <!-- 상세 드로어 -->
   <aside id="drawer" class="drawer" aria-hidden="true">
     <div class="drawer-head">
@@ -213,5 +225,6 @@
 <script src="regions.js"></script>
 <script src="app.js"></script>
 <script src="local.js"></script>
+<script src="favorites.js"></script>
 </body>
 </html>

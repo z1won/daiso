@@ -386,3 +386,23 @@ html.lb-lock, html.lb-lock body { overflow: hidden; }
   .lb-nav { top: auto; bottom: 74px; }
   .lb-hint { display: none; }
 }
+
+/* ---------- 즐겨찾기 ---------- */
+.tab-count { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: 10px; display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
+.fav-btn { flex: 0 0 auto; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-muted); font-size: 15px; line-height: 1; cursor: pointer; }
+.fav-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.fav-btn.on { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+.fav-btn.shake { animation: fav-shake .35s; }
+@keyframes fav-shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.bhead-r { display: inline-flex; align-items: center; gap: 6px; }
+.bhead .fav-btn { width: 24px; height: 24px; font-size: 13px; }
+.frow { display: grid; grid-template-columns: 32px minmax(180px, 1.2fr) 150px minmax(160px, 1.5fr) auto; align-items: center; gap: 10px; padding: 8px 6px; border-top: 1px solid var(--border); }
+.frow:first-child { border-top: 0; }
+.fstat { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.fdetail { min-width: 0; }
+.factions { display: flex; align-items: center; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+@media (max-width: 760px) {
+  .frow { grid-template-columns: 32px 1fr auto; }
+  .frow .fdetail { grid-column: 2 / -1; }
+  .frow .factions { grid-column: 1 / -1; }
+}
