@@ -49,6 +49,10 @@ public/            ← GitHub Pages에 올라가는 폴더 (이것만으로 동�
   config.js        실행 모드 (정적: false / 로컬 서버가 true로 바꿔서 내려줌)
   app.js           가격 비교 탭
   local.js         다이소 전용 / 편의점 전용 탭, 지역 선택
+  favorites.js     즐겨찾기 탭 (관심 상품 재고 다시 조회)
+  map.js           매장 지도 보기 (Leaflet + OpenStreetMap, 처음 열 때 불러옴)
+  share.js         공유 링크 만들기 / 링크로 열면 같은 화면 복원
+  palette.js       빠른 검색 창 (Ctrl+K, 초성 검색)
   lightbox.js      제품 사진 크게 보기
   regions.js       시/도·시/군/구 목록
   style.css        스타일

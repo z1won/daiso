@@ -23,6 +23,8 @@
       <button class="tab" data-tab="fav" role="tab">★ 즐겨찾기<span class="tab-count" id="favCount" hidden></span></button>
     </nav>
     <div class="top-right">
+      <button type="button" id="paletteBtn" class="icon-btn wide palette-btn" title="빠른 검색 (Ctrl+K)">⌕ <span class="pb-text">빠른 검색</span> <kbd>Ctrl K</kbd></button>
+      <button type="button" id="shareBtn" class="icon-btn wide" title="지금 보는 화면을 링크로 공유">공유</button>
       <span id="mcpStatus" class="status-pill" title="MCP 연결 상태"><i class="sdot"></i><span>MCP 연결 확인 중…</span></span>
       <button id="themeBtn" class="icon-btn" title="테마 전환" aria-label="테마 전환">◐</button>
     </div>
@@ -151,7 +153,10 @@
       <section class="panel">
         <div class="panel-head">
           <h2>지역 매장 재고 <span class="muted" id="dRegionLabel"></span></h2>
-          <label class="check"><input type="checkbox" id="dInStockOnly"> 재고 있는 매장만</label>
+          <div class="tools">
+            <label class="check"><input type="checkbox" id="dInStockOnly"> 재고 있는 매장만</label>
+            <div class="seg view-seg" data-scope="daiso" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button></div>
+          </div>
         </div>
         <div id="dDetail"><div class="empty">왼쪽에서 상품을 선택하면<br>선택한 지역 다이소 매장의 재고 수량과 진열 위치를 보여줍니다.</div></div>
       </section>
@@ -185,9 +190,13 @@
     <section class="panel" style="margin-top:8px">
       <div class="panel-head">
         <h2>재고 있는 가까운 매장 <span class="muted">(브랜드 통합)</span> <span class="muted" id="cNearMeta"></span></h2>
-        <span class="muted small">거리는 선택 지역 중심 기준</span>
+        <div class="tools">
+          <span class="muted small">거리는 선택 지역 중심 기준</span>
+          <div class="seg view-seg" data-scope="cvs" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button></div>
+        </div>
       </div>
-      <div class="table-wrap short">
+      <div class="store-map" id="cMap" hidden></div>
+      <div class="table-wrap short" id="cListWrap">
         <table class="results fixed">
           <colgroup><col style="width:120px"><col style="width:20%"><col style="width:90px"><col style="width:100px"><col style="width:28%"><col></colgroup>
           <thead><tr><th>브랜드</th><th>매장</th><th class="num">거리</th><th class="num">재고</th><th>상품</th><th>주소</th></tr></thead>
@@ -226,5 +235,8 @@
 <script src="app.js"></script>
 <script src="local.js"></script>
 <script src="favorites.js"></script>
+<script src="map.js"></script>
+<script src="share.js"></script>
+<script src="palette.js"></script>
 </body>
 </html>

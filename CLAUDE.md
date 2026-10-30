@@ -35,9 +35,13 @@ npm run static   # 정적 모드 확인 (public/ 만 서빙, http://localhost:40
 
 ### 프론트엔드
 
-- 전역 스크립트를 `index.html` 에서 순서대로 로드한다: `config.js` → `core.js` → `api-shim.js` → `lightbox.js` → `regions.js` → `app.js` → `local.js` → `favorites.js`. 모듈 시스템이 없으므로 로드 순서와 전역 이름 충돌에 주의 (`$`, `esc` 등은 `app.js` 에, `api`·`region`·`resolveLocation` 등은 `local.js` 에 정의되어 뒤 파일들이 공유).
+- 전역 스크립트를 `index.html` 에서 순서대로 로드한다: `config.js` → `core.js` → `api-shim.js` → `lightbox.js` → `regions.js` → `app.js` → `local.js` → `favorites.js` → `map.js` → `share.js` → `palette.js`. 모듈 시스템이 없으므로 로드 순서와 전역 이름 충돌에 주의 (`$`, `esc` 등은 `app.js` 에, `api`·`region`·`resolveLocation` 등은 `local.js` 에 정의되어 뒤 파일들이 공유).
 - `app.js` = 가격 비교 탭 (`/api/compare`, `/api/popwords`, `/api/health`), `local.js` = 다이소 전용·편의점 전용 탭과 지역 선택 (`/api/geocode` 는 GS25 `find_stores` 를 지오코딩 용도로 활용).
 - `favorites.js` = 즐겨찾기 탭. ★ 버튼으로 상품과 **저장 당시 지역**을 `ps-favorites` 에 보관하고, 탭을 열 때 기존 `/api/daiso/stock`·`/api/cvs/stock` 을 다시 호출한다 (메모리 결과 2분 재사용, 동시 3개). 지역 함수(`regionText`, `resolveLocation` 등)는 이 때문에 지역 객체를 인자로 받는다.
+- `map.js` = 목록/지도 전환. Leaflet 1.9.4를 unpkg에서 SRI 해시와 함께 **처음 지도를 열 때만** 불러온다. 숨겨진 탭에서 그린 지도는 크기가 0이라 `tabshown` 이벤트에서 다시 그린다.
+- `share.js` = 현재 탭 상태를 쿼리스트링(`t`, `q`, `r1~r3`, `p`, `b`, `c` 등)으로 만들고, 로드 시 복원한 뒤 `history.replaceState` 로 주소를 정리한다. GPS 좌표는 링크에 넣지 않는다. 전역 `toast()` 도 여기 있다.
+- `palette.js` = Ctrl+K 빠른 검색 창 (IME 대비 `e.code === 'KeyK'`). 초성만 입력하면 검색 실행 대신 추천 품목(`CVS_CHIPS`, `DAISO_CHIPS`, `DEFAULT_SUGGEST`)에서 찾는다.
+- 탭 전환 시 `showTab` 이 `tabshown` CustomEvent를 보내므로, 뒤 파일들은 이 이벤트로 탭 진입에 반응한다.
 - HTML은 템플릿 문자열로 생성하므로 외부 데이터는 반드시 `esc()` 로 이스케이프한다.
 - 설정·최근 검색어는 `localStorage` (`ps-` 접두사 키)에 저장.
 

@@ -406,3 +406,74 @@ html.lb-lock, html.lb-lock body { overflow: hidden; }
   .frow .fdetail { grid-column: 2 / -1; }
   .frow .factions { grid-column: 1 / -1; }
 }
+
+/* ---------- 매장 지도 ---------- */
+.tools .view-seg { flex: 0 0 auto; }
+.store-map { position: relative; isolation: isolate; z-index: 0; height: clamp(320px, 58vh, 560px); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+.split .store-map { flex: 1; min-height: 320px; height: auto; }
+#dDetail { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.store-map .map-msg { height: 100%; display: grid; place-items: center; }
+.store-map .leaflet-container, .store-map.leaflet-container { font: inherit; background: var(--surface-2); }
+.map-legend { display: flex; gap: 10px; flex-wrap: wrap; padding: 4px 8px; border-radius: 6px; background: color-mix(in srgb, var(--surface-1) 90%, transparent); border: 1px solid var(--border); font-size: 10.5px; color: var(--text-secondary); }
+.map-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.lg-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--text-secondary); }
+.lg-dot.big { width: 12px; height: 12px; }
+.lg-dot.off { background: var(--text-muted); opacity: .45; }
+.lg-dot.unk { background: transparent; border: 1.5px dashed var(--text-secondary); }
+.lg-dot.center { background: var(--surface-1); border: 2.5px solid var(--text-primary); }
+.store-map .leaflet-popup-content-wrapper, .store-map .leaflet-popup-tip, .store-map .leaflet-tooltip { background: var(--surface-1); color: var(--text-primary); border-color: var(--border); box-shadow: var(--shadow); }
+.store-map .leaflet-popup-content { margin: 10px 12px; font-size: 12px; line-height: 1.5; }
+.map-pop { display: grid; gap: 4px; min-width: 180px; }
+.mp-head { display: flex; justify-content: space-between; gap: 8px; }
+.mp-name { font-weight: 650; font-size: 13px; }
+.store-map .leaflet-bar a { background: var(--surface-1); color: var(--text-primary); border-color: var(--border); }
+/* 다크 테마: 지도 타일 색 반전 */
+:root[data-theme="dark"] .store-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6); }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .store-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6); } }
+
+/* ---------- 빠른 검색 창 ---------- */
+kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; color: var(--text-muted); background: var(--surface-2); }
+.palette-btn kbd { margin-left: 4px; }
+.palette { position: fixed; inset: 0; z-index: 90; display: grid; justify-items: center; align-items: start; padding-top: 12vh; }
+.pal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,.42); backdrop-filter: blur(3px); opacity: 0; transition: opacity .14s; }
+.pal-panel { position: relative; width: min(620px, calc(100vw - 24px)); max-height: 70vh; display: flex; flex-direction: column; background: var(--surface-1); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 24px 64px rgba(0,0,0,.35); overflow: hidden; transform: translateY(-6px) scale(.985); opacity: 0; transition: transform .14s ease, opacity .14s ease; }
+.palette.show .pal-backdrop { opacity: 1; }
+.palette.show .pal-panel { transform: none; opacity: 1; }
+.pal-input { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 16px; }
+.pal-input input { flex: 1; border: 0; outline: 0; background: transparent; font: inherit; font-size: 15px; color: var(--text-primary); }
+.pal-list { overflow-y: auto; padding: 6px; }
+.pal-group { padding: 8px 8px 4px; font-size: 10.5px; font-weight: 600; color: var(--text-muted); }
+.pal-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 7px; cursor: pointer; }
+.pal-item.on { background: var(--surface-2); box-shadow: inset 2px 0 0 var(--text-primary); }
+.pal-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); flex: 0 0 auto; }
+.pal-text { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.pal-label { font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-foot { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
+.pal-foot kbd { margin-right: 2px; }
+
+/* ---------- 알림 (토스트) ---------- */
+.toast-box { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 110; display: grid; gap: 8px; justify-items: center; pointer-events: none; }
+.toast { pointer-events: auto; max-width: min(460px, calc(100vw - 24px)); padding: 10px 14px; border-radius: 10px; background: var(--text-primary); color: var(--surface-1); font-size: 12.5px; line-height: 1.45; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: none; }
+.toast .small { opacity: .75; }
+.toast-url { display: block; width: 100%; margin-top: 6px; padding: 4px 6px; border: 0; border-radius: 4px; font: 11px ui-monospace, monospace; }
+
+@media (max-width: 960px) {
+  .palette-btn kbd, .palette-btn .pb-text { display: none; }
+  .pal-text { flex-direction: column; gap: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .pal-panel, .pal-backdrop, .toast { transition: none; } }
+
+/* ---------- 휴대폰: 상단 바 2줄 (탭은 아랫줄 전체 폭) ---------- */
+@media (max-width: 700px) {
+  .topbar { flex-wrap: wrap; height: auto; row-gap: 0; padding-top: 6px; }
+  .tabs { order: 3; flex: 1 0 100%; height: 40px; margin: 0 -4px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 0 0 auto; }
+  .top-right { gap: 6px; }
+  .icon-btn.wide { white-space: nowrap; padding: 0 8px; }
+  .status-pill { padding: 0 8px; }
+  .status-pill > span { display: none; } /* 연결 상태는 점 색으로만 */
+  .tools .muted.small { display: none; }
+}

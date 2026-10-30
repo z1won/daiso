@@ -210,6 +210,11 @@ function renderDaisoStock() {
     <div><span>온라인 재고</span><b>${r.onlineStock ?? '—'}<small>${r.onlineStock != null ? '개' : ''}</small></b></div>
   </div>`;
   const list = $('#dInStockOnly').checked ? inStock : stores;
+  if (storeView.daiso === 'map' && list.length) {
+    $('#dDetail').innerHTML = daisoHeader(p, stats) + '<div class="store-map" id="dMap"></div>';
+    drawStoreMap('dMap', c, list.map(s => ({ ...s, brand: 'daiso', sub: [s.open && `${s.open}–${s.close || ''}`, s.address].filter(Boolean).join(' · ') })));
+    return;
+  }
   const opt = o => [o.parking && '주차', o.pickup && '픽업', o.taxFree && '택스리펀', o.elevator && '엘리베이터'].filter(Boolean).map(t => `<span class="tag">${t}</span>`).join('');
   $('#dDetail').innerHTML = daisoHeader(p, stats) + (list.length ? `
     <div class="table-wrap short"><table class="results fixed">
@@ -352,6 +357,7 @@ function renderCvsSummary() {
       <td class="num tnum">${fmtDist(s.km)}</td><td class="num">${qtyBadge(s.qty)}</td>
       <td class="ell small" title="${esc(s.product || '')}">${esc(s.product || '')}</td><td class="muted small ell" title="${esc(s.address || '')}">${esc(s.address || '')}</td></tr>`).join('')
     : `<tr><td colspan="6" class="empty">${rs.length ? '주변에 재고가 확인된 매장이 없습니다.' : '조회 결과가 여기에 모입니다.'}</td></tr>`;
+  syncCvsMap();
 }
 
 /* ---------- 시작 ---------- */
