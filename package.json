@@ -1,0 +1,11 @@
+{
+  "name": "price-compare",
+  "version": "1.1.0",
+  "description": "daiso-mcp 기반 다이소·편의점 가격 비교/재고 조회 웹앱 (GitHub Pages 배포 가능)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "static": "npx --yes serve public -l 4000"
+  },
+  "engines": { "node": ">=18" }
+}

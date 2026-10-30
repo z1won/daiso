@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PriceScope · 다이소·편의점 가격/재고</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%232a78d6%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app viz-root">
+
+  <!-- 상단 바 -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◧</span>
+      <span class="name">PriceScope</span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab on" data-tab="compare" role="tab">가격 비교</button>
+      <button class="tab" data-tab="daiso" role="tab"><i class="sw" style="--c:var(--s-daiso)"></i>다이소 전용</button>
+      <button class="tab" data-tab="cvs" role="tab"><i class="sw" style="--c:var(--s-gs25)"></i>편의점 전용<span class="tab-sub">주류·간편식</span></button>
+    </nav>
+    <div class="top-right">
+      <span id="mcpStatus" class="status-pill" title="MCP 연결 상태"><i class="sdot"></i><span>MCP 연결 확인 중…</span></span>
+      <button id="themeBtn" class="icon-btn" title="테마 전환" aria-label="테마 전환">◐</button>
+    </div>
+  </header>
+
+  <div class="view" id="view-compare">
+  <!-- 검색 영역 -->
+  <section class="searchbar">
+    <form id="searchForm" class="search-row" autocomplete="off">
+      <div class="input-wrap">
+        <span class="kbd-hint">/</span>
+        <input id="keyword" type="search" placeholder="상품명을 입력하세요 (예: 콜라, 삼각김밥, 컵라면)" maxlength="50" required>
+      </div>
+      <div id="serviceToggles" class="svc-toggles" role="group" aria-label="비교할 서비스"></div>
+      <label class="sel">
+        <span>서비스별</span>
+        <select id="limit">
+          <option value="5">5개</option>
+          <option value="10" selected>10개</option>
+          <option value="20">20개</option>
+        </select>
+      </label>
+      <button id="goBtn" class="primary" type="submit">비교하기</button>
+    </form>
+    <div class="chips-row">
+      <span class="chips-label" id="chipsLabel">추천</span>
+      <div id="suggestChips" class="chips"></div>
+      <span class="chips-sep"></span>
+      <span class="chips-label">최근</span>
+      <div id="recentChips" class="chips"></div>
+    </div>
+  </section>
+
+  <!-- KPI -->
+  <section class="kpis" id="kpis">
+    <div class="kpi"><div class="k-label">검색 결과</div><div class="k-val" id="kCount">—</div><div class="k-sub" id="kCountSub">상품을 검색해 보세요</div></div>
+    <div class="kpi hero"><div class="k-label">최저가</div><div class="k-val" id="kBest">—</div><div class="k-sub" id="kBestSub">&nbsp;</div></div>
+    <div class="kpi"><div class="k-label">가격 확인</div><div class="k-val" id="kPriced">—</div><div class="k-sub" id="kPricedSub">가격이 공개된 상품 비율</div></div>
+    <div class="kpi"><div class="k-label">MCP 응답</div><div class="k-val" id="kMs">—</div><div class="k-sub" id="kMsSub">compare_products</div></div>
+  </section>
+
+  <main class="grid">
+    <!-- 서비스별 요약 -->
+    <section class="panel svc-panel">
+      <div class="panel-head">
+        <h2>서비스별 가격 범위</h2>
+        <span class="muted small" id="axisNote"></span>
+      </div>
+      <div id="svcSummary" class="svc-summary">
+        <div class="empty">검색하면 서비스별 최저·중앙·최고가가 표시됩니다.</div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <!-- 결과 표 -->
+    <section class="panel results-panel">
+      <div class="panel-head">
+        <h2>상품 목록 <span class="muted" id="resultMeta"></span></h2>
+        <div class="tools">
+          <input id="filter" class="filter" type="search" placeholder="결과 내 필터">
+          <label class="check"><input type="checkbox" id="pricedOnly"> 가격 있는 상품만</label>
+          <div class="seg" role="tablist">
+            <button data-view="table" class="on">표</button>
+            <button data-view="grid">카드</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap" id="tableWrap">
+        <table class="results fixed">
+          <colgroup><col style="width:52px"><col><col style="width:120px"><col style="width:140px"><col style="width:160px"><col style="width:150px"></colgroup>
+          <thead>
+            <tr>
+              <th class="c-img"></th>
+              <th data-sort="name">상품명</th>
+              <th data-sort="service" class="c-svc">매장</th>
+              <th data-sort="price" class="num c-price">가격</th>
+              <th data-sort="diff" class="num c-diff">최저가 대비</th>
+              <th class="c-code">상품 코드</th>
+            </tr>
+          </thead>
+          <tbody id="rows"><tr><td colspan="6" class="empty">아직 검색 결과가 없습니다.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="cards" id="cards" hidden></div>
+    </section>
+
+    <!-- MCP 호출 로그 -->
+    <section class="panel log-panel">
+      <div class="panel-head">
+        <h2>MCP 호출 로그</h2>
+        <button class="ghost small" id="clearLog">지우기</button>
+      </div>
+      <div id="notes" class="notes"></div>
+      <ol id="log" class="log"></ol>
+    </section>
+  </main>
+  </div>
+
+  <!-- ===================== 다이소 전용 ===================== -->
+  <div class="view" id="view-daiso" hidden>
+    <section class="searchbar">
+      <form id="dForm" class="search-row" autocomplete="off">
+        <div class="region" data-region></div>
+        <div class="input-wrap">
+          <span class="kbd-hint">/</span>
+          <input id="dKeyword" type="search" placeholder="다이소 상품 검색 (예: 수납함, 포장지, 리필용기)" maxlength="40" required>
+        </div>
+        <button class="primary" type="submit">상품 검색</button>
+      </form>
+      <div class="chips-row">
+        <span class="chips-label">다이소 인기 품목</span>
+        <div class="chips" id="dChips"></div>
+      </div>
+    </section>
+
+    <div class="split">
+      <section class="panel plist-panel">
+        <div class="panel-head">
+          <h2>다이소 상품 <span class="muted" id="dMeta"></span></h2>
+          <span class="muted small">상품을 누르면 지역 재고를 조회합니다</span>
+        </div>
+        <div id="dProducts" class="plist"><div class="empty">상품명을 검색하세요.<br><span class="small">다이소에서만 파는 생활용품·수납·문구·포장재 등을 찾아보세요.</span></div></div>
+        <button id="dMore" class="ghost more" hidden>더 보기</button>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>지역 매장 재고 <span class="muted" id="dRegionLabel"></span></h2>
+          <label class="check"><input type="checkbox" id="dInStockOnly"> 재고 있는 매장만</label>
+        </div>
+        <div id="dDetail"><div class="empty">왼쪽에서 상품을 선택하면<br>선택한 지역 다이소 매장의 재고 수량과 진열 위치를 보여줍니다.</div></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===================== 편의점 전용 ===================== -->
+  <div class="view" id="view-cvs" hidden>
+    <section class="searchbar">
+      <form id="cForm" class="search-row" autocomplete="off">
+        <div class="region" data-region></div>
+        <div class="input-wrap">
+          <span class="kbd-hint">/</span>
+          <input id="cKeyword" type="search" placeholder="편의점 상품 검색 (예: 참이슬, 카스, 하이볼, 도시락)" maxlength="40" required>
+        </div>
+        <div id="cBrandToggles" class="svc-toggles" role="group" aria-label="편의점 선택"></div>
+        <button class="primary" type="submit">재고 조회</button>
+      </form>
+      <div class="chips-row" id="cChips"></div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi"><div class="k-label">재고 있는 매장</div><div class="k-val" id="cK1">—</div><div class="k-sub" id="cK1s">지역과 상품을 선택하세요</div></div>
+      <div class="kpi hero"><div class="k-label">가장 가까운 재고 매장</div><div class="k-val small-val" id="cK2">—</div><div class="k-sub" id="cK2s">&nbsp;</div></div>
+      <div class="kpi"><div class="k-label">확인된 재고 수량</div><div class="k-val" id="cK3">—</div><div class="k-sub" id="cK3s">조회된 매장 기준 합계</div></div>
+      <div class="kpi"><div class="k-label">조회 지역</div><div class="k-val small-val" id="cK4">—</div><div class="k-sub" id="cK4s">&nbsp;</div></div>
+    </section>
+
+    <section class="brand-grid" id="cBrands"></section>
+
+    <section class="panel" style="margin-top:8px">
+      <div class="panel-head">
+        <h2>재고 있는 가까운 매장 <span class="muted">(브랜드 통합)</span> <span class="muted" id="cNearMeta"></span></h2>
+        <span class="muted small">거리는 선택 지역 중심 기준</span>
+      </div>
+      <div class="table-wrap short">
+        <table class="results fixed">
+          <colgroup><col style="width:120px"><col style="width:20%"><col style="width:90px"><col style="width:100px"><col style="width:28%"><col></colgroup>
+          <thead><tr><th>브랜드</th><th>매장</th><th class="num">거리</th><th class="num">재고</th><th>상품</th><th>주소</th></tr></thead>
+          <tbody id="cNear"><tr><td colspan="6" class="empty">조회 결과가 여기에 모입니다.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- 상세 드로어 -->
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h3 id="dTitle">상품 상세</h3>
+      <button class="icon-btn" id="dClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="drawer-body" id="dBody"></div>
+  </aside>
+  <div id="tooltip" class="tooltip" role="tooltip"></div>
+</div>
+<script src="config.js"></script>
+<script src="core.js"></script>
+<script src="api-shim.js"></script>
+<script src="lightbox.js"></script>
+<script src="regions.js"></script>
+<script src="app.js"></script>
+<script src="local.js"></script>
+</body>
+</html>
