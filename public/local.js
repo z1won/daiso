@@ -213,9 +213,9 @@ function renderDaisoStock() {
     <div><span>온라인 재고</span><b>${r.onlineStock ?? '—'}<small>${r.onlineStock != null ? '개' : ''}</small></b></div>
   </div>`;
   const list = $('#dInStockOnly').checked ? inStock : stores;
-  if (storeView.daiso === 'map' && list.length) {
+  if (storeView.daiso !== 'list' && list.length) { // 'map'(2D) 또는 '3d'
     $('#dDetail').innerHTML = daisoHeader(p, stats) + '<div class="store-map" id="dMap"></div>';
-    drawStoreMap('dMap', c, list.map(s => ({ ...s, brand: 'daiso', sub: [s.open && `${s.open}–${s.close || ''}`, s.address].filter(Boolean).join(' · ') })));
+    (storeView.daiso === '3d' ? drawStore3D : drawStoreMap)('dMap', c, list.map(s => ({ ...s, brand: 'daiso', sub: [s.open && `${s.open}–${s.close || ''}`, s.address].filter(Boolean).join(' · ') })));
     return;
   }
   const opt = o => [o.parking && '주차', o.pickup && '픽업', o.taxFree && '택스리펀', o.elevator && '엘리베이터'].filter(Boolean).map(t => `<span class="tag">${t}</span>`).join('');

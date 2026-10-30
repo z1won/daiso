@@ -29,8 +29,25 @@ const maps = {}; // 요소 id → Leaflet 지도
 const cssVar = name => getComputedStyle(document.querySelector('.viz-root')).getPropertyValue(name).trim();
 const brandLabel = id => id === 'daiso' ? '다이소' : BRAND[id]?.name || id;
 
-function dropMap(id) { if (maps[id]) { maps[id].remove(); delete maps[id]; } }
-function mapMessage(id, html) { dropMap(id); const el = document.getElementById(id); if (el) el.innerHTML = `<div class="empty map-msg">${html}</div>`; }
+function dropMap(id) {
+  const m = maps[id]; if (!m) return;
+  const el = m.getContainer(); m.remove(); delete maps[id];
+  el.classList.remove(...[...el.classList].filter(c => c.startsWith('leaflet-'))); // Leaflet이 남기는 class 정리
+}
+// 2D 지도와 3D 보기(map3d.js)는 같은 영역을 번갈아 쓰므로 둘 다 정리
+const dropAnyMap = id => { dropMap(id); if (typeof drop3d === 'function') drop3d(id); };
+function mapMessage(id, html) { dropAnyMap(id); const el = document.getElementById(id); if (el) el.innerHTML = `<div class="empty map-msg">${html}</div>`; }
+
+// 매장 팝업 내용 (2D 지도·3D 보기 공용)
+function storePopupHtml(s) {
+  return `<div class="map-pop">
+    <div class="mp-head">${swatch(s.brand, brandLabel(s.brand))}<span class="muted">${fmtDist(s.km)}</span></div>
+    <div class="mp-name">${esc(s.name)}</div>
+    <div>${qtyBadge(s.qty)}</div>
+    ${s.sub ? `<div class="muted small">${esc(s.sub)}</div>` : ''}
+    ${s.phone ? `<a class="small" href="tel:${esc(s.phone)}">☎ ${esc(s.phone)}</a>` : ''}
+  </div>`;
+}
 
 function createMap(el) {
   const m = L.map(el, { scrollWheelZoom: false, zoomSnap: 0.5 });
@@ -53,6 +70,7 @@ function createMap(el) {
 async function drawStoreMap(id, center, stores) {
   const el = document.getElementById(id); if (!el) return;
   const token = (el._drawToken = (el._drawToken || 0) + 1);
+  if (typeof drop3d === 'function') drop3d(id);
   if (!window.L) el.innerHTML = '<div class="empty map-msg">지도를 불러오는 중…</div>';
   try { await ensureLeaflet(); }
   catch { mapMessage(id, '지도를 불러오지 못했습니다. 네트워크를 확인하거나 목록 보기를 이용하세요.'); return; }
@@ -81,13 +99,7 @@ async function drawStoreMap(id, center, stores) {
       dashArray: unknown ? '3 3' : null,
     });
     marker.bindTooltip(`${esc(s.name)} · ${s.qty == null ? '확인 불가' : s.qty === 0 ? '품절' : `재고 ${s.qty}`}`, { direction: 'top', offset: [0, -6] });
-    marker.bindPopup(`<div class="map-pop">
-      <div class="mp-head">${swatch(s.brand, brandLabel(s.brand))}<span class="muted">${fmtDist(s.km)}</span></div>
-      <div class="mp-name">${esc(s.name)}</div>
-      <div>${qtyBadge(s.qty)}</div>
-      ${s.sub ? `<div class="muted small">${esc(s.sub)}</div>` : ''}
-      ${s.phone ? `<a class="small" href="tel:${esc(s.phone)}">☎ ${esc(s.phone)}</a>` : ''}
-    </div>`);
+    marker.bindPopup(storePopupHtml(s));
     m._pins.addLayer(marker);
   });
 
@@ -107,16 +119,16 @@ async function drawStoreMap(id, center, stores) {
 
 /* ---------- 편의점 통합 지도 ---------- */
 function syncCvsMap() {
-  const on = storeView.cvs === 'map';
+  const on = storeView.cvs !== 'list'; // 'map'(2D) 또는 '3d'
   $('#cMap').hidden = !on; $('#cListWrap').hidden = on;
   if (!on) return;
   const rs = Object.values(cvs.results).filter(r => !r.error);
   const stores = rs.flatMap(r => r.stores.map(s => ({ ...s, brand: r.brand, sub: [r.product?.name, s.address].filter(Boolean).join(' · ') })));
   if (!stores.length) return mapMessage('cMap', cvs.keyword ? '매장 정보를 불러오는 중…' : '상품을 조회하면 브랜드별 매장이 지도에 표시됩니다.');
-  drawStoreMap('cMap', cvs.center, stores);
+  (storeView.cvs === '3d' ? drawStore3D : drawStoreMap)('cMap', cvs.center, stores);
 }
 
-/* ---------- 목록 / 지도 전환 ---------- */
+/* ---------- 목록 / 지도 / 3D 전환 ---------- */
 function syncViewSegs() {
   document.querySelectorAll('.view-seg').forEach(seg => seg.querySelectorAll('button').forEach(b => {
     const on = b.dataset.v === storeView[seg.dataset.scope];
@@ -136,7 +148,7 @@ document.addEventListener('click', e => {
 // 숨겨진 탭에서 그려진 지도는 크기가 0이라 위치 맞춤이 틀어지므로, 탭을 열 때 다시 그림
 document.addEventListener('tabshown', e => requestAnimationFrame(() => {
   if (e.detail === 'cvs') syncCvsMap();
-  else if (e.detail === 'daiso' && storeView.daiso === 'map' && daiso.stock) renderDaisoStock();
+  else if (e.detail === 'daiso' && storeView.daiso !== 'list' && daiso.stock) renderDaisoStock();
 }));
 
 syncViewSegs();

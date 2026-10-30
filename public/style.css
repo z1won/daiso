@@ -413,7 +413,8 @@ html.lb-lock, html.lb-lock body { overflow: hidden; }
 .split .store-map { flex: 1; min-height: 320px; height: auto; }
 #dDetail { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .store-map .map-msg { height: 100%; display: grid; place-items: center; }
-.store-map .leaflet-container, .store-map.leaflet-container { font: inherit; background: var(--surface-2); }
+.store-map .leaflet-container, .store-map.leaflet-container, .store-map.maplibregl-map { font: inherit; background: var(--surface-2); }
+.store-map .maplibregl-popup, .store-map .maplibregl-ctrl { font: inherit; }
 .map-legend { display: flex; gap: 10px; flex-wrap: wrap; padding: 4px 8px; border-radius: 6px; background: color-mix(in srgb, var(--surface-1) 90%, transparent); border: 1px solid var(--border); font-size: 10.5px; color: var(--text-secondary); }
 .map-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .lg-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--text-secondary); }
@@ -421,6 +422,20 @@ html.lb-lock, html.lb-lock body { overflow: hidden; }
 .lg-dot.off { background: var(--text-muted); opacity: .45; }
 .lg-dot.unk { background: transparent; border: 1.5px dashed var(--text-secondary); }
 .lg-dot.center { background: var(--surface-1); border: 2.5px solid var(--text-primary); }
+/* 3D 보기 (MapLibre) */
+.m3d-legend { position: absolute; left: 10px; bottom: 10px; right: 48px; z-index: 2; width: fit-content; pointer-events: none; }
+.m3d-legend .lg-hint { color: var(--text-muted); }
+@media (max-width: 960px) {
+  .m3d-legend { top: 10px; right: 10px; bottom: auto; left: auto; max-width: calc(100% - 64px); gap: 2px 8px; font-size: 10px; }
+}
+.lg-bar { width: 6px; height: 12px; border-radius: 1px; display: inline-block; background: linear-gradient(var(--text-secondary), color-mix(in srgb, var(--text-secondary) 40%, transparent)); }
+.m3d-center { width: 14px; height: 14px; border-radius: 50%; background: var(--surface-1); border: 3px solid var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.store-map .maplibregl-popup-content { background: var(--surface-1); color: var(--text-primary); border-radius: 8px; box-shadow: var(--shadow); padding: 10px 28px 10px 12px; /* 오른쪽은 닫기 버튼 자리 */ font-size: 12px; line-height: 1.5; }
+.store-map .maplibregl-popup-close-button { color: var(--text-muted); font-size: 16px; padding: 0 6px; }
+.store-map .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--surface-1); }
+.store-map .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--surface-1); }
+.store-map .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--surface-1); }
+.store-map .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--surface-1); }
 .store-map .leaflet-popup-content-wrapper, .store-map .leaflet-popup-tip, .store-map .leaflet-tooltip { background: var(--surface-1); color: var(--text-primary); border-color: var(--border); box-shadow: var(--shadow); }
 .store-map .leaflet-popup-content { margin: 10px 12px; font-size: 12px; line-height: 1.5; }
 .map-pop { display: grid; gap: 4px; min-width: 180px; }

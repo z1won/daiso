@@ -163,7 +163,7 @@
           <h2>지역 매장 재고 <span class="muted" id="dRegionLabel"></span></h2>
           <div class="tools">
             <label class="check"><input type="checkbox" id="dInStockOnly"> 재고 있는 매장만</label>
-            <div class="seg view-seg" data-scope="daiso" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button></div>
+            <div class="seg view-seg" data-scope="daiso" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button><button type="button" data-v="3d" title="재고 수량을 기둥 높이로 보는 3D 지도">3D</button></div>
           </div>
         </div>
         <div id="dDetail" class="m-list"><div class="empty">왼쪽에서 상품을 선택하면<br>선택한 지역 다이소 매장의 재고 수량과 진열 위치를 보여줍니다.</div></div>
@@ -200,7 +200,7 @@
         <h2>재고 있는 가까운 매장 <span class="muted">(브랜드 통합)</span> <span class="muted" id="cNearMeta"></span></h2>
         <div class="tools">
           <span class="muted small">거리는 선택 지역 중심 기준</span>
-          <div class="seg view-seg" data-scope="cvs" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button></div>
+          <div class="seg view-seg" data-scope="cvs" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button><button type="button" data-v="3d" title="재고 수량을 기둥 높이로 보는 3D 지도">3D</button></div>
         </div>
       </div>
       <div class="store-map" id="cMap" hidden></div>
@@ -245,6 +245,7 @@
 <script src="local.js"></script>
 <script src="favorites.js"></script>
 <script src="map.js"></script>
+<script src="map3d.js"></script>
 <script src="share.js"></script>
 <script src="palette.js"></script>
 </body>

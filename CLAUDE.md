@@ -14,5 +14,5 @@
 - API 로직은 `public/core.js` 한 곳에서만 고친다 (브라우저·Node 공용이므로 Node 전용 모듈·DOM 사용 금지).
 - 빌드 없는 바닐라 JS: `index.html` 의 스크립트 로드 순서를 지키고, 외부 데이터는 `esc()` 로 이스케이프, UI 문구는 한국어.
 - 표 열 순서를 바꾸면 `style.css` 모바일 구역의 `nth-child` 규칙도 함께 고친다.
-- `public/vendor/` 는 원본 그대로 둔다 (`.gitattributes` `-text`, `map.js` 의 SRI 해시와 일치해야 함).
+- `public/vendor/` 는 원본 그대로 둔다 (`.gitattributes` `-text`, `map.js`·`map3d.js` 의 SRI 해시와 일치해야 함).
 - 공유 링크에 GPS 좌표를 넣지 않고, 재고 `null`(확인 불가)과 `0`(품절)을 구분한다.
