@@ -42,6 +42,8 @@ npm run static   # 정적 모드 확인 (public/ 만 서빙, http://localhost:40
 - `share.js` = 현재 탭 상태를 쿼리스트링(`t`, `q`, `r1~r3`, `p`, `b`, `c` 등)으로 만들고, 로드 시 복원한 뒤 `history.replaceState` 로 주소를 정리한다. GPS 좌표는 링크에 넣지 않는다. 전역 `toast()` 도 여기 있다.
 - `palette.js` = Ctrl+K 빠른 검색 창 (IME 대비 `e.code === 'KeyK'`). 초성만 입력하면 검색 실행 대신 추천 품목(`CVS_CHIPS`, `DAISO_CHIPS`, `DEFAULT_SUGGEST`)에서 찾는다.
 - 탭 전환 시 `showTab` 이 `tabshown` CustomEvent를 보내므로, 뒤 파일들은 이 이벤트로 탭 진입에 반응한다.
+- 반응형은 `style.css` 끝의 "모바일 최적화" 구역에 모여 있다. **960px 이하**: 상단 바를 간결하게 하고 탭을 화면 아래 고정 탭 바로 옮긴다(태블릿 포함). **700px 이하**: `.m-list` 가 붙은 표(`#tableWrap`, `#dDetail`, `#cListWrap`)를 `nth-child` + `grid-template-areas` 로 두 줄 목록으로 바꾸고, 편의점 브랜드 카드는 옆으로 넘기는 형태(scroll-snap)가 된다. 이 표들의 **열 순서를 바꾸면 모바일 CSS의 `nth-child` 도 같이 고쳐야 한다**.
+- 입력창은 모바일에서 16px (iOS 자동 확대 방지). 좁은 화면 판단은 `local.js` 의 `isNarrow()` (960px).
 - HTML은 템플릿 문자열로 생성하므로 외부 데이터는 반드시 `esc()` 로 이스케이프한다.
 - 설정·최근 검색어는 `localStorage` (`ps-` 접두사 키)에 저장.
 

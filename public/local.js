@@ -35,7 +35,7 @@ document.querySelector('.tabs').onclick = e => { const t = e.target.closest('.ta
 
 // 상단 "MCP 로그" 버튼 — 어느 탭에서든 호출 로그 확인
 const logBtn = document.createElement('button');
-logBtn.className = 'icon-btn wide'; logBtn.textContent = 'MCP 로그'; logBtn.title = 'MCP 호출 로그 보기';
+logBtn.className = 'icon-btn wide'; logBtn.id = 'logBtn'; logBtn.textContent = 'MCP 로그'; logBtn.title = 'MCP 호출 로그 보기';
 document.querySelector('.top-right').prepend(logBtn);
 logBtn.onclick = () => {
   $('#dTitle').textContent = 'MCP 호출 로그';
@@ -167,10 +167,13 @@ function renderDaisoProducts() {
 $('#dProducts').onclick = e => { const r = e.target.closest('.prow[data-i]'); if (r) selectDaiso(daiso.products[r.dataset.i]); };
 $('#dProducts').onkeydown = e => { if (e.key === 'Enter') e.target.closest('.prow')?.click(); };
 
+const isNarrow = () => matchMedia('(max-width: 960px)').matches;
 function selectDaiso(p) {
   daiso.selected = p;
   document.querySelectorAll('#dProducts .prow').forEach(r => r.classList.toggle('picked', daiso.products[r.dataset.i]?.id === p.id));
   loadDaisoStock(p);
+  // 좁은 화면에서는 재고 결과가 목록 아래에 있으므로 그쪽으로 이동
+  if (isNarrow()) $('#dDetail').closest('.panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function loadDaisoStock(p) {
@@ -265,8 +268,11 @@ $('#cChips').innerHTML = CVS_CHIPS.map(([g, ws], i) => `${i ? '<span class="chip
 $('#cChips').onclick = e => { const c = e.target.closest('.chip'); if (c) { $('#cKeyword').value = c.dataset.q; runCvs(c.dataset.q); } };
 $('#cForm').onsubmit = e => { e.preventDefault(); const q = $('#cKeyword').value.trim(); if (q) runCvs(q); };
 
+$('#cNearMore').onclick = () => { cvs.nearAll = true; renderCvsSummary(); };
+
 async function runCvs(keyword) {
   if (keyword !== cvs.keyword) cvs.codes = {};
+  cvs.nearAll = false;
   cvs.keyword = keyword; cvs.results = {};
   const brands = BRANDS.filter(b => cvs.selected.has(b.id));
   $('#cBrands').style.setProperty('--n', brands.length);
@@ -352,11 +358,16 @@ function renderCvsSummary() {
   const q = all.reduce((a, s) => a + s.qty, 0);
   $('#cK3').innerHTML = rs.length ? `${q.toLocaleString()}<span class="unit">개</span>` : '—';
   $('#cNearMeta').textContent = all.length ? `${all.length}곳` : '';
-  $('#cNear').innerHTML = all.length ? all.slice(0, 40).map(s => `
+  // 좁은 화면에서는 처음 10곳만 보여주고 "더 보기"로 펼침
+  const limit = isNarrow() && !cvs.nearAll ? 10 : 40;
+  $('#cNear').innerHTML = all.length ? all.slice(0, limit).map(s => `
     <tr><td>${swatch(s.brand, BRAND[s.brand].name)}</td><td class="pname">${esc(s.name)}</td>
       <td class="num tnum">${fmtDist(s.km)}</td><td class="num">${qtyBadge(s.qty)}</td>
       <td class="ell small" title="${esc(s.product || '')}">${esc(s.product || '')}</td><td class="muted small ell" title="${esc(s.address || '')}">${esc(s.address || '')}</td></tr>`).join('')
     : `<tr><td colspan="6" class="empty">${rs.length ? '주변에 재고가 확인된 매장이 없습니다.' : '조회 결과가 여기에 모입니다.'}</td></tr>`;
+  const more = Math.min(all.length, 40) - limit;
+  $('#cNearMore').hidden = more <= 0;
+  $('#cNearMore').textContent = `${more}곳 더 보기`;
   syncCvsMap();
 }
 

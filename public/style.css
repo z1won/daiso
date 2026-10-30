@@ -465,15 +465,150 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
 }
 @media (prefers-reduced-motion: reduce) { .pal-panel, .pal-backdrop, .toast { transition: none; } }
 
-/* ---------- 휴대폰: 상단 바 2줄 (탭은 아랫줄 전체 폭) ---------- */
-@media (max-width: 700px) {
-  .topbar { flex-wrap: wrap; height: auto; row-gap: 0; padding-top: 6px; }
-  .tabs { order: 3; flex: 1 0 100%; height: 40px; margin: 0 -4px; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { flex: 0 0 auto; }
+/* =========================================================
+   모바일 최적화
+   ========================================================= */
+.tab-ico { display: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.tab[data-tab="fav"] .tab-ico { display: block; width: 13px; height: 13px; stroke-width: 2; }
+.split > * { min-width: 0; } /* 긴 상품명이 화면 폭을 넘기지 않도록 */
+.app { -webkit-tap-highlight-color: transparent; }
+
+/* 태블릿·휴대폰 (터치): 상단 바는 간결하게, 탭은 화면 아래에 고정 */
+@media (max-width: 960px) {
+  .app { padding: 0 12px calc(76px + env(safe-area-inset-bottom)); }
+  /* --- 상단 바: 로고 + 버튼만 --- */
+  .topbar { margin: 0 -12px 10px; padding: env(safe-area-inset-top) 12px 0; height: calc(50px + env(safe-area-inset-top)); }
   .top-right { gap: 6px; }
-  .icon-btn.wide { white-space: nowrap; padding: 0 8px; }
-  .status-pill { padding: 0 8px; }
-  .status-pill > span { display: none; } /* 연결 상태는 점 색으로만 */
-  .tools .muted.small { display: none; }
+  #logBtn { display: none; } /* 빠른 검색 창의 "MCP 호출 로그 보기"로 이용 */
+  .icon-btn { width: 36px; height: 36px; border-radius: 8px; }
+  .icon-btn.wide { width: auto; padding: 0 12px; font-size: 12.5px; white-space: nowrap; }
+  .icon-btn.palette-btn { width: 36px; padding: 0; font-size: 16px; }
+  .status-pill { width: 14px; height: 14px; padding: 0; border: 0; background: none; justify-content: center; }
+  .status-pill > span { display: none; }
+
+  /* --- 하단 탭 바 --- */
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 0; height: calc(58px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: color-mix(in srgb, var(--surface-1) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-top: 1px solid var(--border); overflow: visible; }
+  .tab { position: relative; flex-direction: column; justify-content: center; gap: 3px; height: 58px; padding: 0; margin: 0; border: 0; font-size: 10.5px; font-weight: 500; }
+  .tab.on { border: 0; font-weight: 650; }
+  .tab.on::before { content: ""; position: absolute; top: -1px; left: 32%; right: 32%; height: 2.5px; border-radius: 0 0 3px 3px; background: var(--text-primary); }
+  .tab .tab-ico, .tab[data-tab="fav"] .tab-ico { display: block; width: 22px; height: 22px; stroke-width: 1.7; }
+  .tab.on .tab-ico { stroke-width: 2.1; }
+  .tab .sw, .tab-sub, .tab-long { display: none; }
+  .tab-count { position: absolute; top: 6px; left: calc(50% + 6px); min-width: 16px; height: 16px; background: var(--bad); color: #fff; border: 0; font-weight: 700; }
+  .toast-box { bottom: calc(72px + env(safe-area-inset-bottom)); }
+
 }
+
+@media (max-width: 700px) {
+
+  /* --- 검색 영역: 큰 터치 영역, iOS 확대 방지(16px) --- */
+  .searchbar { padding: 10px; }
+  .search-row { gap: 8px; }
+  .input-wrap { flex-basis: 100%; }
+  .input-wrap input, .region select, .region input, .filter, .sel select, .pal-input input { font-size: 16px; }
+  .input-wrap input { height: 44px; border-radius: 10px; padding-left: 12px; }
+  .kbd-hint { display: none; }
+  .region { display: flex; width: 100%; height: 44px; border-radius: 10px; }
+  .region select, .region input { height: 42px; }
+  .region .r-sido { flex: 0 0 74px; width: auto; }
+  .region .r-gugun { flex: 1 1 0; width: auto; min-width: 0; }
+  .region .r-dong { flex: 1 1 0; width: auto; min-width: 0; }
+  .region .r-gps { width: 44px; height: 42px; font-size: 18px; }
+  .search-row .primary { flex: 1 1 100%; height: 46px; border-radius: 10px; font-size: 15px; }
+  .svc-toggles { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .svc-tg { height: 38px; justify-content: center; font-size: 12.5px; }
+  .sel { height: 38px; }
+  .chips-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 8px -10px 0; padding: 0 10px; }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .chips { flex-wrap: nowrap; }
+  .chips-label, .chips-sep { flex: 0 0 auto; }
+  .chip { flex: 0 0 auto; height: 32px; padding: 0 12px; font-size: 13px; }
+
+  /* --- 패널·KPI --- */
+  .panel { border-radius: 12px; padding: 12px; }
+  .panel-head { flex-wrap: wrap; row-gap: 6px; }
+  .panel-head h2 { font-size: 14px; }
+  .tools { flex-wrap: wrap; gap: 8px; }
+  .seg button { padding: 7px 14px; font-size: 12.5px; }
+  .check { min-height: 32px; display: inline-flex; align-items: center; gap: 6px; }
+  .kpis { gap: 8px; margin: 10px 0; }
+  .kpi { padding: 10px 12px; }
+  .log-panel { display: none; } /* 개발용 로그는 빠른 검색 창 → "MCP 호출 로그 보기" */
+  .table-wrap, .table-wrap.short, .cards { max-height: none; height: auto; overflow: visible; }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* --- 표 → 두 줄 카드형 목록 (상품명·매장명이 잘리지 않게) --- */
+  .m-list table, .m-list tbody { display: block; width: 100%; }
+  .m-list thead, .m-list colgroup { display: none; }
+  .m-list tr { display: grid; align-items: center; gap: 3px 10px; padding: 11px 2px; border-bottom: 1px solid var(--border); }
+  .m-list tr:last-child { border-bottom: 0; }
+  .m-list td { display: block; padding: 0; border: 0; min-width: 0; text-align: left; }
+  .m-list tr:has(> td[colspan]) { display: block; }
+  .m-list .pname { white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; max-width: none; font-size: 13.5px; }
+  .m-list tr.best { background: color-mix(in srgb, var(--good-bg) 60%, transparent); border-radius: 8px; padding-left: 8px; padding-right: 8px; }
+  .m-list .results tbody tr td { background: none; }
+  .results-panel .tools { width: 100%; }
+  .results-panel .filter { flex: 1 1 140px; height: 38px; }
+
+  /* 가격 비교: [사진] 상품명 / 매장 · 가격 */
+  #tableWrap tr { grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-areas: "img name name" "img svc price"; }
+  #tableWrap td:nth-child(1) { grid-area: img; }
+  #tableWrap td:nth-child(1) .thumb { width: 48px; height: 48px; border-radius: 8px; }
+  #tableWrap td:nth-child(2) { grid-area: name; }
+  #tableWrap td:nth-child(3) { grid-area: svc; }
+  #tableWrap td:nth-child(4) { grid-area: price; text-align: right; font-size: 14px; font-weight: 650; }
+  #tableWrap td:nth-child(5), #tableWrap td:nth-child(6) { display: none; }
+
+  /* 다이소 재고: 매장명·주소 + 재고 / 거리 · 영업시간 · 진열 위치 */
+  #dDetail tr { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name qty" "dist hours loc"; }
+  #dDetail td:nth-child(1) { grid-area: name; }
+  #dDetail td:nth-child(2) { grid-area: dist; font-weight: 600; }
+  #dDetail td:nth-child(3) { grid-area: qty; text-align: right; }
+  #dDetail td:nth-child(4) { grid-area: hours; color: var(--text-muted); }
+  #dDetail td:nth-child(5) { display: none; }
+  #dDetail td:nth-child(6) { grid-area: loc; text-align: right; }
+  #dDetail .loc-btn { height: 30px; padding: 0 12px; }
+
+  /* 편의점 통합: 브랜드 매장명 + 재고 / 거리 · 상품 */
+  #cListWrap tr { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "brand name qty" "dist prod prod"; }
+  #cListWrap td:nth-child(1) { grid-area: brand; }
+  #cListWrap td:nth-child(2) { grid-area: name; font-weight: 600; }
+  #cListWrap td:nth-child(3) { grid-area: dist; font-weight: 600; }
+  #cListWrap td:nth-child(4) { grid-area: qty; text-align: right; }
+  #cListWrap td:nth-child(5) { grid-area: prod; color: var(--text-muted); }
+  #cListWrap td:nth-child(6) { display: none; }
+
+  /* --- 다이소: 상품 목록은 적당한 높이로, 재고 패널은 상단 바 아래로 스크롤 --- */
+  .split { gap: 10px; }
+  .split .plist { max-height: 52vh; }
+  .prow { padding: 9px 6px; }
+  /* 최소 높이: 재고를 불러오는 동안에도 이 패널을 화면 맨 위까지 스크롤할 수 있도록 */
+  .split > .panel:last-child { scroll-margin-top: calc(60px + env(safe-area-inset-top)); min-height: calc(100dvh - 150px); }
+  .dhead .thumb.lg { width: 64px; height: 64px; }
+  .fav-btn { width: 40px; height: 40px; font-size: 18px; border-radius: 10px; }
+  .mini-kpis b { font-size: 15px; }
+
+  /* --- 편의점: 브랜드 카드를 옆으로 넘겨 보기 --- */
+  .brand-grid { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -12px; padding: 0 12px 4px; scroll-padding: 0 12px; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .brand-grid::-webkit-scrollbar { display: none; }
+  .brand-grid > * { flex: 0 0 86%; scroll-snap-align: start; }
+  .brand-grid > :only-child { flex-basis: 100%; }
+  .bstores { height: auto; max-height: 360px; }
+  .bhead .fav-btn { width: 34px; height: 34px; font-size: 15px; }
+  select.cand { height: 38px; font-size: 14px; }
+
+  .more { min-height: 42px; border-radius: 10px; font-size: 13px; }
+
+  /* --- 즐겨찾기 --- */
+  .factions .ghost.small { height: 32px; padding: 0 12px; font-size: 12.5px; }
+
+  /* --- 지도·드로어·빠른 검색 --- */
+  .store-map { height: 62vh; border-radius: 10px; }
+  .split .store-map { min-height: 360px; }
+  .drawer { width: 100vw; max-width: 100vw; }
+  .palette { padding-top: calc(8px + env(safe-area-inset-top)); }
+  .pal-panel { width: calc(100vw - 16px); max-height: calc(100dvh - 90px); border-radius: 14px; }
+  .pal-item { padding: 11px 10px; }
+  .pal-foot { display: none; }
+}
+

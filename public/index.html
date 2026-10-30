@@ -2,7 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
 <title>PriceScope · 다이소·편의점 가격/재고</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%232a78d6%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
@@ -17,10 +19,10 @@
       <span class="name">PriceScope</span>
     </div>
     <nav class="tabs" role="tablist">
-      <button class="tab on" data-tab="compare" role="tab">가격 비교</button>
-      <button class="tab" data-tab="daiso" role="tab"><i class="sw" style="--c:var(--s-daiso)"></i>다이소 전용</button>
-      <button class="tab" data-tab="cvs" role="tab"><i class="sw" style="--c:var(--s-gs25)"></i>편의점 전용<span class="tab-sub">주류·간편식</span></button>
-      <button class="tab" data-tab="fav" role="tab">★ 즐겨찾기<span class="tab-count" id="favCount" hidden></span></button>
+      <button class="tab on" data-tab="compare" role="tab"><svg class="tab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M10 20V4M16 20v-7M21 20H3"/></svg><span class="tab-label">가격 비교</span></button>
+      <button class="tab" data-tab="daiso" role="tab"><svg class="tab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2L5 8zM9 8a3 3 0 0 1 6 0"/></svg><i class="sw" style="--c:var(--s-daiso)"></i><span class="tab-label">다이소<span class="tab-long"> 전용</span></span></button>
+      <button class="tab" data-tab="cvs" role="tab"><svg class="tab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l1.6-5h14.8L21 9M4 9v11h16V9M3 9h18M10 20v-5h4v5"/></svg><i class="sw" style="--c:var(--s-gs25)"></i><span class="tab-label">편의점<span class="tab-long"> 전용</span></span><span class="tab-sub">주류·간편식</span></button>
+      <button class="tab" data-tab="fav" role="tab"><svg class="tab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/></svg><span class="tab-label">즐겨찾기</span><span class="tab-count" id="favCount" hidden></span></button>
     </nav>
     <div class="top-right">
       <button type="button" id="paletteBtn" class="icon-btn wide palette-btn" title="빠른 검색 (Ctrl+K)">⌕ <span class="pb-text">빠른 검색</span> <kbd>Ctrl K</kbd></button>
@@ -92,7 +94,7 @@
           </div>
         </div>
       </div>
-      <div class="table-wrap" id="tableWrap">
+      <div class="table-wrap m-list" id="tableWrap">
         <table class="results fixed">
           <colgroup><col style="width:52px"><col><col style="width:120px"><col style="width:140px"><col style="width:160px"><col style="width:150px"></colgroup>
           <thead>
@@ -158,7 +160,7 @@
             <div class="seg view-seg" data-scope="daiso" role="group" aria-label="보기 방식"><button type="button" data-v="list" class="on">목록</button><button type="button" data-v="map">지도</button></div>
           </div>
         </div>
-        <div id="dDetail"><div class="empty">왼쪽에서 상품을 선택하면<br>선택한 지역 다이소 매장의 재고 수량과 진열 위치를 보여줍니다.</div></div>
+        <div id="dDetail" class="m-list"><div class="empty">왼쪽에서 상품을 선택하면<br>선택한 지역 다이소 매장의 재고 수량과 진열 위치를 보여줍니다.</div></div>
       </section>
     </div>
   </div>
@@ -196,12 +198,13 @@
         </div>
       </div>
       <div class="store-map" id="cMap" hidden></div>
-      <div class="table-wrap short" id="cListWrap">
+      <div class="table-wrap short m-list" id="cListWrap">
         <table class="results fixed">
           <colgroup><col style="width:120px"><col style="width:20%"><col style="width:90px"><col style="width:100px"><col style="width:28%"><col></colgroup>
           <thead><tr><th>브랜드</th><th>매장</th><th class="num">거리</th><th class="num">재고</th><th>상품</th><th>주소</th></tr></thead>
           <tbody id="cNear"><tr><td colspan="6" class="empty">조회 결과가 여기에 모입니다.</td></tr></tbody>
         </table>
+        <button type="button" id="cNearMore" class="ghost more" hidden></button>
       </div>
     </section>
   </div>
