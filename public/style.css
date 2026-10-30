@@ -477,6 +477,7 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
 /* 태블릿·휴대폰 (터치): 상단 바는 간결하게, 탭은 화면 아래에 고정 */
 @media (max-width: 960px) {
   .app { padding: 0 12px calc(76px + env(safe-area-inset-bottom)); }
+  .seg button { padding: 7px 14px; font-size: 12.5px; } /* 터치하기 좋은 크기 (태블릿 포함) */
   /* --- 상단 바: 로고 + 버튼만 --- */
   .topbar { margin: 0 -12px 10px; padding: env(safe-area-inset-top) 12px 0; height: calc(50px + env(safe-area-inset-top)); }
   .top-right { gap: 6px; }
@@ -530,7 +531,6 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
   .panel-head { flex-wrap: wrap; row-gap: 6px; }
   .panel-head h2 { font-size: 14px; }
   .tools { flex-wrap: wrap; gap: 8px; }
-  .seg button { padding: 7px 14px; font-size: 12.5px; }
   .check { min-height: 32px; display: inline-flex; align-items: center; gap: 6px; }
   .kpis { gap: 8px; margin: 10px 0; }
   .kpi { padding: 10px 12px; }
@@ -609,6 +609,7 @@ kbd { font: 10px/1 ui-monospace, monospace; padding: 2px 5px; border: 1px solid 
   /* --- 지도·드로어·빠른 검색 --- */
   .store-map { height: 62vh; border-radius: 10px; }
   .split .store-map { min-height: 360px; }
+  .store-map .leaflet-bottom.leaflet-left .map-legend { margin-bottom: 26px; } /* 저작권 표시(오른쪽 아래)와 겹치지 않게 */
   .drawer { width: 100vw; max-width: 100vw; }
   .palette { padding-top: calc(8px + env(safe-area-inset-top)); }
   .pal-panel { width: calc(100vw - 16px); max-height: calc(100dvh - 90px); border-radius: 14px; }

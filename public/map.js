@@ -100,7 +100,9 @@ async function drawStoreMap(id, center, stores) {
   const inStock = pts.filter(s => s.qty > 0);
   const focus = (inStock.length ? inStock : pts).map(s => [s.lat, s.lng]);
   if (center?.lat) focus.push([center.lat, center.lng]);
-  m.fitBounds(L.latLngBounds(focus), { padding: [28, 28], maxZoom: 16 });
+  // 아래쪽은 범례(휴대폰에서는 두 줄 + 저작권 표시 위)에 가리지 않도록 더 비움
+  const bottom = matchMedia('(max-width: 700px)').matches ? 96 : 48;
+  m.fitBounds(L.latLngBounds(focus), { paddingTopLeft: [28, 28], paddingBottomRight: [28, bottom], maxZoom: 16 });
 }
 
 /* ---------- 편의점 통합 지도 ---------- */

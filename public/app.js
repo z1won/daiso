@@ -287,9 +287,10 @@ $('#filter').oninput = e => { state.filter = e.target.value; renderResults(); };
 // 모바일: 표 머리글이 숨겨지므로 정렬을 선택 상자로
 $('#mSort').onchange = e => { const [key, dir] = e.target.value.split(':'); state.sort = { key, dir: Number(dir) }; renderResults(); };
 $('#pricedOnly').onchange = e => { state.pricedOnly = e.target.checked; renderResults(); };
-document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+// 가격 비교 탭의 표/카드 전환만 (다이소·편의점의 목록/지도 전환도 .seg 스타일을 쓰므로 범위를 좁힘)
+document.querySelectorAll('#view-compare .seg button').forEach(b => b.onclick = () => {
   state.view = b.dataset.view;
-  document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('#view-compare .seg button').forEach(x => x.classList.toggle('on', x === b));
   $('#tableWrap').hidden = state.view !== 'table';
   $('#cards').hidden = state.view !== 'grid';
 });
